@@ -112,22 +112,23 @@
             switch (beacon.proximity) {
                 case CLProximityImmediate:
                     NSLog(@"immediate");
-                    rangeMessage = @"Range Immediate: ";
+                    rangeMessage = @"immediate";
                     break;
                 case CLProximityNear:
                     NSLog(@"near");
-                    rangeMessage = @"Range Near: ";
+                    rangeMessage = @"near";
                     break;
                 case CLProximityFar:
                     NSLog(@"far");
-                    rangeMessage = @"Range Far: ";
+                    rangeMessage = @"far";
                     break;
                 default:
                     NSLog(@"unknown");
-                    rangeMessage = @"Range Unknown: ";
+                    rangeMessage = @"unknown";
                     break;
             }
             
+            [self sendPostMessage: beacon proximity: rangeMessage];
             NSString *message = [NSString stringWithFormat:@"UUID:%@ range: %@ major:%@, minor:%@, accuracy:%f, rssi:%ld\n",
                                  beacon.proximityUUID,
                                  rangeMessage,
@@ -151,6 +152,25 @@
     [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
 }
 
+- (void)sendPostMessage: (CLBeacon*)beacon proximity: (NSString*)proximity{
+    NSString *uuid = [[beacon.proximityUUID UUIDString] stringByReplacingOccurrencesOfString: @"-" withString: @""];
+    NSString *query = [NSString stringWithFormat:@"uuid=%@&major=%d&minor=%d&rssi=%ld&accuracy=%f&proximity=%@&id=iPhone",
+                       uuid, [beacon.major intValue], [beacon.minor intValue], beacon.rssi, beacon.accuracy, proximity];
+    NSData *queryData = [query dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSString *url = @"http://html5-export-hackathon-ibeacon.herokuapp.com/";
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc]init];
+    [request setURL:[NSURL URLWithString:url]];
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:queryData];
+    
+    NSURLResponse *response;
+    NSError *error;
+    
+    [NSURLConnection sendSynchronousRequest:request
+                          returningResponse:&response
+                                      error:&error];
+}
 
 @end
 
