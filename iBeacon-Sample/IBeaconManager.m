@@ -152,7 +152,7 @@
     [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
 }
 
-- (void)sendPostMessage: (CLBeacon*)beacon proximity: (NSString*)proximity{
+- (void)sendPostMessage: (CLBeacon*)beacon proximity: (NSString*)proximity{    
     NSString *uuid = [[beacon.proximityUUID UUIDString] stringByReplacingOccurrencesOfString: @"-" withString: @""];
     NSString *query = [NSString stringWithFormat:@"uuid=%@&major=%d&minor=%d&rssi=%ld&accuracy=%f&proximity=%@&id=iPhone",
                        uuid, [beacon.major intValue], [beacon.minor intValue], beacon.rssi, beacon.accuracy, proximity];
@@ -164,12 +164,16 @@
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:queryData];
     
-    NSURLResponse *response;
-    NSError *error;
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue]
+                           completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+                               if (error) {
+                                   NSLog(@"error: %@", [error localizedDescription]);
+                                   return;
+                               } else {
+                                   // succeeded
+                               }
+                           }];
     
-    [NSURLConnection sendSynchronousRequest:request
-                          returningResponse:&response
-                                      error:&error];
 }
 
 @end

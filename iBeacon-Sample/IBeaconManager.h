@@ -14,7 +14,7 @@
 @end
 
 @interface IBeaconManager : NSObject<CLLocationManagerDelegate>{
-    NSString *displayMessage;
+    NSString *displayMessage; 
 }
 
 @property (nonatomic) CLLocationManager *locationManager;
